@@ -1,29 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.common.name }}-service
+  name: {{ .Values.common.name }}-service-admission
   namespace: {{ .Values.common.name }}
   annotations:
     cloud.google.com/neg: '{"ingress":true}'
 spec:
   allocateLoadBalancerNodePorts: true
-  externalTrafficPolicy: Cluster
   internalTrafficPolicy: Cluster
-  type: LoadBalancer
+  type: ClusterIP
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
   ports:
-  - port: 80
-    nodePort: 31852
-    protocol: TCP
-    name: http
-    targetPort: http
   - port: 443
-    nodePort: 31387
-    targetPort: https
     protocol: TCP
-    name: https
+    name: https-webhook
+    targetPort: webhook
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: {{ .Values.common.name }}

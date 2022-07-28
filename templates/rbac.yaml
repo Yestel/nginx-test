@@ -1,35 +1,8 @@
-{{- if .Values.rbac.create }}
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ include "nginx-ingress.name" . }}
-  labels:
-    {{- include "nginx-ingress.labels" . | nindent 4 }}
+  name: {{ .Values.common.name }}
 rules:
-{{- if .Values.controller.appprotect.enable }}
-- apiGroups: 
-  - appprotect.f5.com
-  resources: 
-  - appolicies
-  - aplogconfs
-  - apusersigs
-  verbs: 
-  - get 
-  - watch
-  - list
-{{- end }}
-{{- if .Values.controller.appprotectdos.enable }}
-- apiGroups:
-    - appprotectdos.f5.com
-  resources:
-    - apdospolicies
-    - apdoslogconfs
-    - dosprotectedresources
-  verbs:
-    - get
-    - watch
-    - list
-{{- end }}
 - apiGroups:
   - ""
   resources:
@@ -55,10 +28,8 @@ rules:
   - get
   - list
   - watch
-{{- if .Values.controller.reportIngressStatus.enableLeaderElection }}
   - update
   - create
-{{- end }}
 - apiGroups:
   - ""
   resources:
@@ -79,24 +50,15 @@ rules:
   resources:
   - ingresses
   verbs:
-  - get
   - list
   - watch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - ingressclasses
-  verbs:
   - get
-{{- if .Values.controller.reportIngressStatus.enable }}
 - apiGroups:
   - networking.k8s.io
   resources:
   - ingresses/status
   verbs:
   - update
-{{- end }}
-{{- if .Values.controller.enableCustomResources }}
 - apiGroups:
   - k8s.nginx.org
   resources:
@@ -116,33 +78,34 @@ rules:
   - virtualserverroutes/status
   - policies/status
   - transportservers/status
+  - dnsendpoints/status
   verbs:
   - update
-{{- end }}
-{{- if .Values.controller.reportIngressStatus.ingressLink }}
 - apiGroups:
-  - cis.f5.com
+  - networking.k8s.io
   resources:
-  - ingresslinks
+  - ingressclasses
   verbs:
-  - list
-  - watch
   - get
-{{- end }}
-{{- if .Values.controller.enableCertManager }}
 - apiGroups:
-  - cert-manager.io
+    - cis.f5.com
   resources:
-  - certificates
+    - ingresslinks
   verbs:
-  - list
-  - watch
-  - get
-  - update
-  - create
-  - delete
-{{- end }}
-{{- if .Values.controller.enableExternalDNS }}
+    - list
+    - watch
+    - get
+- apiGroups:
+    - cert-manager.io
+  resources:
+    - certificates
+  verbs:
+    - list
+    - watch
+    - get
+    - update
+    - create
+    - delete
 - apiGroups:
     - externaldns.nginx.org
   resources:
@@ -160,20 +123,16 @@ rules:
   - dnsendpoints/status
   verbs:
   - update
-{{- end }}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ include "nginx-ingress.name" . }}
-  labels:
-    {{- include "nginx-ingress.labels" . | nindent 4 }}
+  name: {{ .Values.common.name }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "nginx-ingress.serviceAccountName" . }}
-  namespace: {{ .Values.controller.namespace}}
+  name: {{ .Values.common.name }}
+  namespace: {{ .Values.common.name }}
 roleRef:
   kind: ClusterRole
-  name: {{ include "nginx-ingress.name" . }}
+  name: {{ .Values.common.name }}
   apiGroup: rbac.authorization.k8s.io
-{{- end }}
